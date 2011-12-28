@@ -1,0 +1,186 @@
+在初学一门编程语言的时候，写一个“Hello world!”程序是最常见的入门方法。通过写一个成功的“Hello world!”，可以实践这门语言最基本的语法特性，还可以带给自己成就感，真是一举两得。C/C++语言本身有很多特性，如果能够将这些技术分解出来变成一个个的“Hello world!”，并且将这些技术点到为止，貌似也算是一件善事。这里，列举了10个“Hello world!”程序，大家雅俗共赏一下。
+
+1. 最经典的“Hello world!”
+“Hello world!”最经典的写法当然是直接用 printf 输出“Hello world!”这几个字符了。无论用C还是 C++，写起来都非常的简洁明了。这里把最常见的几个全部列在下面。
+#include <stdio.h>
+#include <iostream>
+
+int main()
+{
+    printf("Hello world!");                   // 教科书的写法
+    puts("Hello world!");                     // 我最喜欢的
+    puts("Hello" " " "world!");               // 拼接字符串
+    std::cout << "Hello world!" << std::endl; // C++风格的教科书写法
+
+    return 0;
+}
+特别需要注意的是，在C/C++里，如果两个字符串之间除空白符以外没有任何东西，编译器会自动认为这两个字符串是连在一起的字符串。这样，如果一个字符串过长，可以用这种方法换行来写，既不浪费性能，又美观。
+
+2. 用宏写的“Hello world!”
+在C/C++里，宏是一个神奇的东西。特别是在C语言中，宏可以帮我们做一些“又脏又累”的活，包括拼接代码片断、隐藏繁琐的实现细节等等。其中特别有趣的是“#”的用法，它可以“提取”参数的名字，把它变成字符串。
+#include <stdio.h>
+
+#define Say(sth) puts(#sth)
+
+int main()
+{
+    return Say(Hello world!);
+}
+请注意，这个Hello world可是完全没有出现引号哦！
+
+3. 断章取义的“Hello world!”
+字符串是一种常量这当然毫无疑问，但是它的类型是什么，这就需要考虑一下了。使用C++的typeid就可以这个问题的答案，而且只要是符合C或C++标准的编译器就应该是一样的结果。比如字符串“Hello world!”，它的类型就是 char const [13]。
+知道了这个，就可以写出以下的“Hello world!”：
+#include <stdio.h>
+
+int main()
+{
+    return puts(&"Do not say: Hello world!"[12]);
+}
+
+4. 退出时运行的“Hello world!”
+大家都知道 main 函数退出意味着程序结束，可是这并不完全正确，我们完全可以在 main 函数退出以后做很多事呢——比如说，输出“Hello world!”。这个功能依赖于C标准库中提供的函数 atexit()，调用这个函数并注册自己的回调函数就行。需要注意，这个函数可以调用多次，最后注册的函数最先执行。
+#include <stdio.h>
+#include <stdlib.h>
+
+void say()
+{
+    printf("world!");
+}
+
+void sth()
+{
+    printf("Hello ");
+}
+
+int main()
+{
+    return atexit(say), atexit(sth);
+}
+
+5. 读取自己的“Hello world!”
+C/C++的编译器提供了一些有用的内置宏，最常用的就是 __FILE__ 和 __LINE__ 了。其中，__FILE__ 代表当前的源文件的文件名，嗯，对了，如果我们让这个程序读取自己的源文件，不就可以做一个很有意思的“Hello world!”了么？
+// Hello world!
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main()
+{
+    std::ifstream ifs(__FILE__);
+    std::string say, some, word;
+
+    ifs >> say >> some >> word;
+    std::cout << some << " " << word;
+
+    return 0;
+}
+
+6. 话分两头的“Hello world!”
+有了C++的类，我们就可以光明正大的在 main 函数执行之前和之后做感兴趣的事情了。我们可以声明一个全局的类的实例，这样，在 main 函数执行之前会调用这个类的构造函数，结束之后则会调用析构函数。
+#include <iostream>
+
+class say
+{
+public:
+    say()
+    {
+        std::cout << "Hell";
+    }
+
+    ~say()
+    {
+        std::cout << "world!";
+    }
+}hello;
+
+int main()
+{
+    std::cout << "o ";
+    return 0;
+} 
+
+7. 传入模板的“Hello world!”
+C++的模板功能极为强大，可以说是C++里面最艰深、最经典、最时尚的部分。一个“Hello world!”当然无法使用很多很高级的模板技巧，我也不想只使用模板特化这样无阻挂齿的小技巧，嗯，那就来演示一个比较罕见的用法吧。
+#include <iostream>
+
+template <char * words>
+class say
+{
+public:
+    void operator () ()
+    {
+        std::cout << words;
+    }
+};
+
+extern char hello[] = "Hello world!";
+
+int main()
+{
+    return say<hello>()(), 0;
+}
+请注意，这个 extern 是十分必要的，只有加上了 extern，这个指针才是一个编译器间可以确定的值，也才可以参与模板运算。还有，hello 必须为数组类型，而不能为 char*，这个道理和加 extern 是一样的。
+此外，这里还演示了 functor 的用法，嗯，关于它的优点就不在这里多说了，反正是与原生指针相比有很多好处就是了。
+
+8. 调用私有函数的“Hello world!”
+我们知道，C++类的私有函数是不能被外界访问的，比如说 main 函数里面，它绝对不能访问类的私有函数，除非把它设为类的友元函数。不过我们还是可以用一些比较奇怪的方法访问类的私有函数——当然，这个私有函数必须满足一个条件：它是虚函数。
+这里就涉及到一个问题，指向虚函数的虚表放在哪里？对于 VS.Net 2003 而言，虚表是类的第一个成员，虚函数指针按照函数声明的顺序放在虚表里面。当然，这个说法并不严谨，更细节的东西还是去看看那本“成人高钙奶粉”吧，它会给出最权威的解答。
+这里是一个很有意思的例子：
+#include <iostream>
+#include <cstddef>
+
+class secret
+{
+private:
+    virtual void say()
+    {
+        std::cout << "Hello world!";
+    }
+};
+
+int main()
+{
+    secret word;
+    (reinterpret_cast<void (*)()>(**(intptr_t**)(&word)))();
+
+    return 0;
+}
+
+9. 最暴力的“Hello world!”
+最暴力的调用函数的方法是：直接修改函数的返回地址，让这个地址指向我们想要调用的函数。这也就是缓冲区溢出漏洞的应用方法了，不过里面还涉及到很多问题，在这里就不一一列举，想要了解的话，还是去 Google 吧。这里只演示一个可以在 VS.Net 2003 下可以用的“Hello world!”。
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+
+void say()
+{
+    puts("Hello world!");
+    exit(0);
+}
+
+int main()
+{
+    volatile intptr_t a = 0;
+    volatile intptr_t * p = &a;
+
+    *(p + 2) = (intptr_t)say;
+    *(p + 3) = (intptr_t)say;
+
+    return 0;
+}
+
+10. 外星人说的“Hello world!”
+好了，这个“Hello world!”是最匪夷所思的一个了！不过它并没有涉及任何复杂的C/C++语言特性，只是看起来有点酷。你能看懂外星人在说什么不？
+#include <stdio.h>
+
+void alien_say(char * p)
+{
+    while (putchar(*(p += *(p + 1) - *p)));
+}
+
+int main()
+{
+    return alien_say("BETHO! Altec oh liryom(a loadjudas!) dowd."), 0;
+}
