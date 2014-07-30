@@ -1,0 +1,1 @@
+astyle --style=kr --convert-tabs --indent=spaces=4 --add-brackets --pad-header --unpad-paren --pad-oper --max-code-length=100 --formatted --align-pointer=type --align-reference=type
